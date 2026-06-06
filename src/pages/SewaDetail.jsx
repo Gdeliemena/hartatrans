@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ShoppingCart, Settings2, Users } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Settings2, Users, ChevronDown } from 'lucide-react';
 import { carsData } from '../data/carsData';
 import { motorsData } from '../data/dataMotor';
 import { driverData } from '../data/driverData';
@@ -19,7 +19,7 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
 
   if (!item) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
         <h2>Kendaraan tidak ditemukan!</h2>
         <button onClick={() => navigateTo('sewa')} className="mt-4 bg-[#0B7A3E] text-white px-6 py-2 rounded">Kembali</button>
       </div>
@@ -56,17 +56,33 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
 
   return (
     <div className="bg-white min-h-screen pt-8 pb-24">
+      
+      {/* INJEKSI CSS KHUSUS JINAKKAN SAFARI iPHONE */}
+      <style>{`
+        /* Memaksa teks tanggal Safari muncul & rata kiri */
+        input[type="date"]::-webkit-date-and-time-value {
+          min-height: 20px;
+          text-align: left;
+        }
+        /* Membuang panah bawaan Apple di iPhone secara paksa */
+        select.ios-fix-select {
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+        }
+      `}</style>
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1100px]">
         
         <button onClick={() => navigateTo('sewa')} className="flex items-center text-gray-700 hover:text-[#0B7A3E] font-medium mb-8 transition">
           <ArrowLeft size={18} className="mr-2" /> Kembali
         </button>
 
-        {/* BUNGKUS UTAMA (Tanpa Kotak, Flex Layout Bersih) */}
-        <div className="flex flex-col md:flex-row gap-10 lg:gap-16 items-start">
+        {/* BUNGKUS UTAMA */}
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-16 items-start w-full">
           
-          {/* KIRI: GAMBAR FULL KOTAK (Standalone dengan sudut membulat) */}
-          <div className="w-full md:w-1/2 lg:w-[45%] rounded-3xl overflow-hidden shadow-lg">
+          {/* KIRI: GAMBAR FULL KOTAK */}
+          <div className="w-full md:w-1/2 lg:w-[45%] rounded-3xl overflow-hidden shadow-md border border-gray-100 flex-shrink-0">
              <img 
                src={item.img} 
                alt={item.name} 
@@ -74,14 +90,14 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
              />
           </div>
 
-          {/* KANAN: FORM & DETAIL (Melayang bersih di background putih) */}
-          <div className="w-full md:w-1/2 lg:w-[55%] flex flex-col pt-2 md:pt-4">
+          {/* KANAN: FORM & DETAIL */}
+          <div className="w-full md:w-1/2 lg:w-[55%] flex flex-col min-w-0">
             
             <span className="bg-[#E8F5E9] text-[#0B7A3E] text-[10px] font-bold px-3 py-1.5 rounded-full w-fit mb-4">
               Tersedia
             </span>
             
-            <h1 className="text-3xl md:text-[40px] font-bold text-gray-900 uppercase tracking-wide mb-3">
+            <h1 className="text-3xl md:text-[40px] font-bold text-gray-900 uppercase tracking-wide mb-3 truncate">
               {item.name}
             </h1>
             
@@ -94,58 +110,80 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
 
             <div className="mt-2 border-b border-gray-200 pb-6 mb-8">
                <p className="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Harga Sewa / Hari</p>
-               <p className="text-3xl md:text-[32px] font-bold text-[#0B7A3E]">
+               <p className="text-2xl sm:text-3xl font-bold text-[#0B7A3E]">
                  Rp {formatPrice(currentDailyPrice)} <span className="text-sm text-gray-400 font-normal">/ hari</span>
                </p>
             </div>
 
-            <div className="flex-grow space-y-5">
-               <div className="grid grid-cols-2 gap-4">
-                 <div className="flex flex-col">
+            {/* FORM INPUTS */}
+            <div className="w-full space-y-5">
+               
+               {/* FIX DETIK INI JUGA: Di HP wajib 1 kolom ke bawah (cols-1), di tablet baru cols-2 */}
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                 <div className="flex flex-col w-full">
                     <label className="text-[12px] font-bold text-gray-800 mb-2">Tanggal Mulai</label>
-                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all" />
+                    <input 
+                      type="date" 
+                      value={startDate} 
+                      onChange={(e) => setStartDate(e.target.value)} 
+                      className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
+                    />
                  </div>
-                 <div className="flex flex-col">
+                 <div className="flex flex-col w-full">
                     <label className="text-[12px] font-bold text-gray-800 mb-2">Tanggal Selesai</label>
-                    <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all" />
+                    <input 
+                      type="date" 
+                      value={endDate} 
+                      min={startDate} 
+                      onChange={(e) => setEndDate(e.target.value)} 
+                      className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
+                    />
                  </div>
                </div>
 
-               {/* Pilihan Driver */}
+               {/* PILIHAN DRIVER */}
                {isCar && (
-                 <div className="flex flex-col pt-2">
+                 <div className="flex flex-col pt-2 w-full">
                     <label className="text-[12px] font-bold text-gray-800 mb-2">Pilih Driver</label>
-                    <select 
-                      value={driverOption}
-                      onChange={(e) => setDriverOption(e.target.value)}
-                      className="border border-gray-300 rounded-lg p-3 text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all cursor-pointer"
-                    >
-                      {isLepasKunciAvailable && (
-                        <option value="lepas_kunci">-- Lepas Kunci (Tanpa Driver) --</option>
-                      )}
+                    
+                    <div className="relative w-full">
+                      <select 
+                        value={driverOption}
+                        onChange={(e) => setDriverOption(e.target.value)}
+                        className="ios-fix-select border border-gray-300 rounded-lg p-3 pr-10 text-sm w-full bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all cursor-pointer min-h-[48px]"
+                      >
+                        {isLepasKunciAvailable && (
+                          <option value="lepas_kunci">Lepas Kunci (Tanpa Driver)</option>
+                        )}
+                        
+                        <optgroup label="Dengan Driver (+ Rp 150.000 / hari)">
+                          {driverData.map(driver => (
+                            <option key={driver.id} value={driver.id}>
+                              {driver.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      </select>
                       
-                      <optgroup label="Dengan Driver (+ Rp 150.000 / hari)">
-                        {driverData.map(driver => (
-                          <option key={driver.id} value={driver.id}>
-                            {driver.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    </select>
+                      {/* Panah Pengganti Milik Kita */}
+                      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                        <ChevronDown size={16} className="w-4 h-4 flex-shrink-0" />
+                      </div>
+                    </div>
+
                  </div>
                )}
             </div>
 
-            {/* SUMMARY & CHECKOUT */}
-            <div className="mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-              
+            {/* BOT BOTTOM SUMMARY & CHECKOUT */}
+            <div className="mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-6 w-full">
               <div className="w-full sm:w-auto">
                 <p className="text-xs font-bold text-gray-500 mb-1">Total Biaya ({totalDays} Hari)</p>
                 <p className="text-2xl font-bold text-gray-900">
                   Rp {formatPrice(totalBookingPrice)}
                 </p>
               </div>
-
+              
               <button 
                 onClick={() => addToCart({
                   name: item.name,
@@ -159,9 +197,8 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
                 })}
                 className="w-full sm:w-auto flex-1 bg-[#F59E0B] text-white font-bold py-3.5 px-8 rounded-lg shadow-[0_4px_14px_0_rgba(245,158,11,0.39)] hover:bg-amber-600 hover:shadow-[0_6px_20px_rgba(245,158,11,0.23)] hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-sm"
               >
-                 <ShoppingCart size={18} /> Tambah ke Keranjang
+                 <ShoppingCart size={18} className="w-4 h-4 flex-shrink-0" /> Tambah ke Keranjang
               </button>
-
             </div>
 
           </div>
