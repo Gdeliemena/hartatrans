@@ -57,14 +57,13 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
   return (
     <div className="bg-white min-h-screen pt-8 pb-24">
       
-      {/* INJEKSI CSS UNTUK MENYEMBUNYIKAN SEBELUM DI-TAP */}
+      {/* CSS RESET KHUSUS iPHONE AGAR INPUT DATE TIDAK MEMILIKI TEXT BAWAAN SAFARI SAAT KOSONG */}
       <style>{`
-        /* Hilangkan panah kustom android bawaan untuk input date text */
-        input.mobile-date-input::-webkit-calendar-picker-indicator {
-          display: block;
-          cursor: pointer;
+        /* Menghapus text default bawaan iOS browser agar tidak bentrok dengan overlay kita */
+        input[type="date"] {
+          -webkit-appearance: none;
+          min-height: 48px;
         }
-        /* Buang panah ganda Apple di iPhone */
         select.ios-fix-select {
           -webkit-appearance: none !important;
           -moz-appearance: none !important;
@@ -118,33 +117,48 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
             {/* FORM INPUTS */}
             <div className="w-full space-y-5">
                
-               {/* INPUT TANGGAL DENGEN TRIK TYPE SWITCHING (ANTI BLANK iPHONE & ANDROID) */}
+               {/* INPUT TANGGAL (1 KOLOM DI HP, 2 KOLOM DI LAPTOP) */}
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                 
+                 {/* KOTAK TANGGAL MULAI */}
                  <div className="flex flex-col w-full">
                     <label className="text-[12px] font-bold text-gray-800 mb-2">Tanggal Mulai</label>
-                    <input 
-                      type={startDate ? "date" : "text"} 
-                      placeholder="Pilih Tanggal Mulai"
-                      value={startDate} 
-                      onFocus={(e) => (e.target.type = "date")}
-                      onBlur={(e) => { if (!e.target.value) e.target.type = "text"; }}
-                      onChange={(e) => setStartDate(e.target.value)} 
-                      className="mobile-date-input border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
-                    />
+                    <div className="relative w-full">
+                      <input 
+                        type="date" 
+                        value={startDate} 
+                        onChange={(e) => setStartDate(e.target.value)} 
+                        className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
+                      />
+                      {/* FAKE PLACEHOLDER DENGAN POINTER EVENTS NONE */}
+                      {!startDate && (
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none bg-white pr-4">
+                          mm/dd/yyyy
+                        </span>
+                      )}
+                    </div>
                  </div>
+
+                 {/* KOTAK TANGGAL SELESAI */}
                  <div className="flex flex-col w-full">
                     <label className="text-[12px] font-bold text-gray-800 mb-2">Tanggal Selesai</label>
-                    <input 
-                      type={endDate ? "date" : "text"} 
-                      placeholder="Pilih Tanggal Selesai"
-                      value={endDate} 
-                      min={startDate}
-                      onFocus={(e) => (e.target.type = "date")}
-                      onBlur={(e) => { if (!e.target.value) e.target.type = "text"; }}
-                      onChange={(e) => setEndDate(e.target.value)} 
-                      className="mobile-date-input border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
-                    />
+                    <div className="relative w-full">
+                      <input 
+                        type="date" 
+                        value={endDate} 
+                        min={startDate}
+                        onChange={(e) => setEndDate(e.target.value)} 
+                        className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
+                      />
+                      {/* FAKE PLACEHOLDER DENGAN POINTER EVENTS NONE */}
+                      {!endDate && (
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none bg-white pr-4">
+                          mm/dd/yyyy
+                        </span>
+                      )}
+                    </div>
                  </div>
+
                </div>
 
                {/* PILIHAN DRIVER */}
@@ -171,7 +185,6 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
                         </optgroup>
                       </select>
                       
-                      {/* Panah Pengganti Milik Kita */}
                       <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
                         <ChevronDown size={16} className="w-4 h-4 flex-shrink-0" />
                       </div>
@@ -181,7 +194,7 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
                )}
             </div>
 
-            {/* BOT BOTTOM SUMMARY & CHECKOUT */}
+            {/* BOTTOM SUMMARY & CHECKOUT */}
             <div className="mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-6 w-full">
               <div className="w-full sm:w-auto">
                 <p className="text-xs font-bold text-gray-500 mb-1">Total Biaya ({totalDays} Hari)</p>
