@@ -1,34 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Star } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Star, ChevronDown } from 'lucide-react';
 import { tripHarianDetails } from '../data/tripHarianDetailData';
 import { initialReviewsData } from '../data/dataReview';
 import { carsData } from '../data/carsData';
 import { driverData } from '../data/driverData';
 
-export default function TripHarianDetail({ navigateTo, tourId }) {
-  // Pastikan ID default aman jika tidak ketemu
+export default function TripHarianDetail({ navigateTo, tourId, addToCart }) {
   const currentTrip = tripHarianDetails[tourId] || tripHarianDetails['th1'];
 
-  // States
   const [selectedPackage, setSelectedPackage] = useState(currentTrip.options[0]);
   const [selectedCar, setSelectedCar] = useState('');
   const [selectedAddons, setSelectedAddons] = useState({});
+  
+  // States Tanggal & Driver Pengikat Keranjang
+  const [tourDate, setTourDate] = useState('');
+  const [selectedDriver, setSelectedDriver] = useState('');
 
-  // Reset states jika pindah halaman tour
   useEffect(() => {
     setSelectedPackage(currentTrip.options[0]);
     setSelectedCar('');
     setSelectedAddons({});
+    setTourDate('');
+    setSelectedDriver('');
   }, [currentTrip]);
 
   const handleAddonChange = (addonId) => {
-    setSelectedAddons(prev => ({
-      ...prev,
-      [addonId]: !prev[addonId]
-    }));
+    setSelectedAddons(prev => ({ ...prev, [addonId]: !prev[addonId] }));
   };
 
-  // Kalkulasi Harga
   const formatPrice = (price) => new Intl.NumberFormat('id-ID').format(price);
   const basePrice = currentTrip.pricing[selectedPackage] || 0;
   
@@ -75,44 +74,49 @@ export default function TripHarianDetail({ navigateTo, tourId }) {
   };
 
   return (
-    <div className="bg-white min-h-screen pt-8 pb-20">
+    <div className="bg-white min-h-screen pt-8 pb-24">
+      
+      {/* RESET CSS iPHONE SAFARI */}
+      <style>{`
+        input[type="date"] {
+          -webkit-appearance: none;
+          min-height: 46px;
+        }
+        select.ios-fix-select {
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+        }
+      `}</style>
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1200px]">
         
-        <button onClick={() => navigateTo('tour')} className="flex items-center text-gray-600 hover:text-[#0B7A3E] font-medium mb-6 transition">
+        <button onClick={() => navigateTo('tour')} className="flex items-center text-gray-700 hover:text-[#0B7A3E] font-medium mb-6 transition">
           <ArrowLeft size={18} className="mr-2" /> Kembali ke Daftar Tour
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
-          {/* ========================================= */}
-          {/* KOLOM KIRI (Deskripsi Simple Sesuai Desain) */}
-          {/* ========================================= */}
+          {/* KOLOM KIRI */}
           <div className="lg:col-span-2">
             <div className="w-full aspect-video md:h-[450px] rounded-2xl overflow-hidden mb-8">
               <img src={currentTrip.image} alt={currentTrip.title} className="w-full h-full object-cover" />
             </div>
 
             <h1 className="text-3xl md:text-[40px] font-bold text-gray-900 mb-4">{currentTrip.title}</h1>
-            <p className="text-gray-700 text-lg mb-8 leading-relaxed">
-              {currentTrip.description}
-            </p>
+            <p className="text-gray-700 text-lg mb-8 leading-relaxed">{currentTrip.description}</p>
 
             <div className="border-t border-gray-300 pt-6 mb-12">
-              <p className="text-sm font-bold text-gray-900 mb-2">Harga (Per Pax / Paket)</p>
-              <p className="text-3xl md:text-4xl font-bold text-[#0B7A3E]">
-                Rp {formatPrice(totalPrice)}
-              </p>
+              <p className="text-sm font-bold text-gray-900 mb-2">Harga Total (Per Pax + Mobil)</p>
+              <p className="text-3xl md:text-4xl font-bold text-[#0B7A3E]">Rp {formatPrice(totalPrice)}</p>
             </div>
 
-            {/* ITINERARY & DETAIL (Tambahan agar data tidak mubazir) */}
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                <h3 className="font-bold text-xl text-gray-900 mb-4">Detail Perjalanan</h3>
-               
                <h4 className="font-semibold text-gray-800 mt-4 mb-2">Rencana Perjalanan (Itinerary)</h4>
                <ul className="list-disc list-inside text-gray-600 text-sm space-y-1 mb-4">
                  {currentTrip.itinerary.map((act, i) => <li key={i}>{act}</li>)}
                </ul>
-
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                  <div>
                    <h4 className="font-semibold text-green-700 mb-2">Include (Termasuk)</h4>
@@ -130,56 +134,81 @@ export default function TripHarianDetail({ navigateTo, tourId }) {
             </div>
           </div>
 
-          {/* ========================================= */}
-          {/* KOLOM KANAN (Form Konfigurasi - Sticky) */}
-          {/* ========================================= */}
+          {/* KOLOM KANAN (FORM KONFIGURASI) */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-28">
               <h3 className="font-bold text-lg text-gray-900 mb-6">Konfigurasi Perjalanan Tour</h3>
 
               <div className="space-y-5">
+                
+                {/* FIXED TANGGAL BARU (ANTI BLANK & SINGLE CLICK) */}
                 <div className="flex flex-col">
                   <label className="text-[12px] font-bold text-gray-800 mb-1.5">Tanggal Tour</label>
-                  <input type="date" className="border border-gray-300 rounded-md p-2.5 text-sm w-full focus:outline-none focus:border-[#0B7A3E]" />
+                  <div className="relative w-full">
+                    <input 
+                      type="date" 
+                      value={tourDate}
+                      onChange={(e) => setTourDate(e.target.value)}
+                      className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[46px]" 
+                    />
+                    {!tourDate && (
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none bg-white pr-4">
+                        mm/dd/yyyy
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
+                {/* KENDARAAN */}
                 <div className="flex flex-col">
                   <label className="text-[12px] font-bold text-gray-800 mb-1.5">Pilih Kendaraan</label>
-                  <select value={selectedCar} onChange={(e) => setSelectedCar(e.target.value)} className="border border-gray-300 rounded-md p-2.5 text-sm w-full bg-white text-gray-600 focus:outline-none focus:border-[#0B7A3E]">
-                    <option value="">-- Pilih Kendaraan Anda --</option>
-                    <optgroup label="Seri Regular">{carsData.filter(car => car.category === 'regular').map(car => <option key={car.id} value={car.name}>{car.name}</option>)}</optgroup>
-                    <optgroup label="Seri Bisnis">{carsData.filter(car => car.category === 'bisnis').map(car => <option key={car.id} value={car.name}>{car.name}</option>)}</optgroup>
-                  </select>
+                  <div className="relative w-full">
+                    <select value={selectedCar} onChange={(e) => setSelectedCar(e.target.value)} className="ios-fix-select border border-gray-300 rounded-lg p-3 pr-10 text-sm w-full bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all min-h-[46px]">
+                      <option value="">-- Pilih Kendaraan Anda --</option>
+                      <optgroup label="Seri Regular">{carsData.filter(car => car.category === 'regular').map(car => <option key={car.id} value={car.name}>{car.name}</option>)}</optgroup>
+                      <optgroup label="Seri Bisnis">{carsData.filter(car => car.category === 'bisnis').map(car => <option key={car.id} value={car.name}>{car.name}</option>)}</optgroup>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                      <ChevronDown size={16} />
+                    </div>
+                  </div>
                 </div>
 
+                {/* DRIVER */}
                 <div className="flex flex-col">
                   <label className="text-[12px] font-bold text-gray-800 mb-1.5">Pilih Driver</label>
-                  <select className="border border-gray-300 rounded-md p-2.5 text-sm w-full bg-white text-gray-600 focus:outline-none focus:border-[#0B7A3E]">
-                    <option value="">-- Pilih Driver Anda --</option>
-                    {driverData.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
-                  </select>
+                  <div className="relative w-full">
+                    <select value={selectedDriver} onChange={(e) => setSelectedDriver(e.target.value)} className="ios-fix-select border border-gray-300 rounded-lg p-3 pr-10 text-sm w-full bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all min-h-[46px]">
+                      <option value="">-- Pilih Driver Anda --</option>
+                      {driverData.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                      <ChevronDown size={16} />
+                    </div>
+                  </div>
                 </div>
 
+                {/* PILIHAN ORANG */}
                 <div className="flex flex-col">
                   <label className="text-[12px] font-bold text-gray-800 mb-1.5">{currentTrip.packageLabel}</label>
-                  <select value={selectedPackage} onChange={(e) => setSelectedPackage(e.target.value)} className="border border-gray-300 rounded-md p-2.5 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E]">
-                    {currentTrip.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
+                  <div className="relative w-full">
+                    <select value={selectedPackage} onChange={(e) => setSelectedPackage(e.target.value)} className="ios-fix-select border border-gray-300 rounded-lg p-3 pr-10 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all min-h-[46px]">
+                      {currentTrip.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                      <ChevronDown size={16} />
+                    </div>
+                  </div>
                 </div>
 
-                {/* CHECKBOX TAMBAHAN (ADD-ONS) */}
+                {/* ADDONS */}
                 {currentTrip.addons.length > 0 && (
                   <div className="flex flex-col pt-2">
                     <label className="text-[12px] font-bold text-gray-800 mb-2">Tambahan</label>
                     <div className="space-y-2.5">
                       {currentTrip.addons.map(addon => (
                         <label key={addon.id} className="flex items-start gap-2.5 cursor-pointer group">
-                          <input 
-                            type="checkbox" 
-                            checked={!!selectedAddons[addon.id]}
-                            onChange={() => handleAddonChange(addon.id)}
-                            className="mt-0.5 rounded text-[#0B7A3E] focus:ring-[#0B7A3E] cursor-pointer"
-                          />
+                          <input type="checkbox" checked={!!selectedAddons[addon.id]} onChange={() => handleAddonChange(addon.id)} className="mt-0.5 rounded text-[#0B7A3E] focus:ring-[#0B7A3E] cursor-pointer" />
                           <span className="text-sm text-gray-600 group-hover:text-gray-900 transition">
                             {addon.name} = Rp.{formatPrice(addon.price)}/hari
                           </span>
@@ -190,16 +219,28 @@ export default function TripHarianDetail({ navigateTo, tourId }) {
                 )}
               </div>
 
-              <button className="w-full bg-[#F59E0B] text-white font-bold py-3.5 rounded-md mt-8 shadow-md hover:bg-amber-600 transition flex items-center justify-center gap-2 text-sm">
-                 Masukkan ke Keranjang Tour
+              {/* TOMBOL EMAS KERANJANG */}
+              <button 
+                onClick={() => {
+                  if(!tourDate) { alert('Mohon pilih tanggal trip terlebih dahulu!'); return; }
+                  addToCart({
+                    name: currentTrip.title,
+                    img: currentTrip.image,
+                    price: totalPrice,
+                    tanggal: tourDate,
+                    kendaraan: selectedCar || 'Tanpa Kendaraan Tambahan',
+                    driver: selectedDriver || 'Tim Harta Trans'
+                  });
+                }}
+                className="w-full bg-[#F59E0B] text-white font-bold py-3.5 rounded-md mt-8 shadow-md hover:bg-amber-600 transition flex items-center justify-center gap-2 text-sm"
+              >
+                 <ShoppingCart size={18} /> Masukkan ke Keranjang Tour
               </button>
             </div>
           </div>
         </div>
 
-        {/* ========================================= */}
-        {/* BAGIAN REVIEW BAWAH (Sama persis dengan TourDetail) */}
-        {/* ========================================= */}
+        {/* REVIEWS */}
         <div className="max-w-4xl mx-auto mt-20">
           <h3 className="font-bold text-2xl text-[#0B7A3E] mb-8 text-center uppercase tracking-wide">Ulasan Pelanggan</h3>
           {currentTourReviews.length > 0 ? (

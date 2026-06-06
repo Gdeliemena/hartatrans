@@ -1,33 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Clock, Star } from 'lucide-react';
+import { ArrowLeft, Clock, Star, ShoppingCart, ChevronDown } from 'lucide-react';
 import { detailedTours } from '../data/detailedToursData';
 import { initialReviewsData } from '../data/dataReview';
 import { carsData } from '../data/carsData';
 import { driverData } from '../data/driverData';
 
-export default function TourDetail({ navigateTo, tourId, addToCart }) { 
+export default function TourDetail({ navigateTo, tourId, addToCart }) {
   const currentTour = detailedTours[tourId] || detailedTours['ph1']; 
 
   const [selectedPax, setSelectedPax] = useState('2-3 PAX');
   const [selectedHotel, setSelectedHotel] = useState('TANPA HOTEL');
   const [selectedCar, setSelectedCar] = useState('');
+  
+  // States Tanggal & Driver Pengikat Keranjang
   const [tourDate, setTourDate] = useState('');
   const [selectedDriver, setSelectedDriver] = useState('');
-  
+
+  // State Dinamis untuk menangkap pilihan hari
   const [daySelections, setDaySelections] = useState({});
 
   useEffect(() => {
     const defaultSelections = {};
     currentTour.itinerary.forEach((item, index) => {
       if (item.options) {
-        defaultSelections[index] = Object.keys(item.options)[0]; // Set default opsi pertama
+        defaultSelections[index] = Object.keys(item.options)[0];
       }
     });
     setDaySelections(defaultSelections);
-    setSelectedHotel('TANPA HOTEL'); // Reset ke tanpa hotel
+    setSelectedHotel('TANPA HOTEL');
+    setTourDate(''); // Reset tanggal saat ganti paket
+    setSelectedDriver('');
   }, [currentTour]);
 
-  // Fungsi mengubah pilihan hari
   const handleDayChange = (index, value) => {
     setDaySelections(prev => ({ ...prev, [index]: value }));
   };
@@ -71,7 +75,21 @@ export default function TourDetail({ navigateTo, tourId, addToCart }) {
   };
 
   return (
-    <div className="bg-white min-h-screen pt-8 pb-20">
+    <div className="bg-white min-h-screen pt-8 pb-24">
+      
+      {/* RESET CSS iPHONE SAFARI */}
+      <style>{`
+        input[type="date"] {
+          -webkit-appearance: none;
+          min-height: 46px;
+        }
+        select.ios-fix-select {
+          -webkit-appearance: none !important;
+          -moz-appearance: none !important;
+          appearance: none !important;
+        }
+      `}</style>
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1200px]">
         
         <button onClick={() => navigateTo('tour')} className="flex items-center text-gray-600 hover:text-[#0B7A3E] font-medium mb-6 transition">
@@ -80,7 +98,7 @@ export default function TourDetail({ navigateTo, tourId, addToCart }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
-          {/* KOLOM KIRI (Informasi Dinamis) */}
+          {/* KOLOM KIRI */}
           <div className="lg:col-span-2">
             <div className="w-full aspect-[16/9] md:h-[400px] rounded-2xl overflow-hidden mb-8">
               <img src={currentTour.image} alt={currentTour.title} className="w-full h-full object-cover" />
@@ -94,8 +112,6 @@ export default function TourDetail({ navigateTo, tourId, addToCart }) {
 
             <h3 className="font-bold text-xl text-gray-900 mb-4 border-b pb-2">Rencana Perjalanan</h3>
             <div className="mb-8 space-y-5">
-              
-              {/* RENDERING ITINERARY SECARA DINAMIS */}
               {currentTour.itinerary.map((item, index) => {
                 const activeOption = daySelections[index];
                 return (
@@ -111,7 +127,6 @@ export default function TourDetail({ navigateTo, tourId, addToCart }) {
                   </div>
                 )
               })}
-
             </div>
 
             <h3 className="font-bold text-xl text-gray-900 mb-4 border-b pb-2">INCLUDE</h3>
@@ -125,89 +140,133 @@ export default function TourDetail({ navigateTo, tourId, addToCart }) {
             </div>
           </div>
 
-          {/* KOLOM KANAN (Form Dinamis) */}
+          {/* KOLOM KANAN (FORM KONFIGURASI) */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-28">
               <h3 className="font-bold text-lg text-gray-900 mb-6">Konfigurasi Perjalanan</h3>
 
               <div className="space-y-4">
+                
+                {/* FIXED TANGGAL BARU (ANTI BLANK & SINGLE CLICK) */}
                 <div className="flex flex-col">
                   <label className="text-[11px] font-bold text-gray-700 mb-1">Tanggal Tour</label>
-                  <input type="date" value={tourDate} onChange={(e) => setTourDate(e.target.value)} className="border border-gray-300 rounded-md p-2.5 text-sm w-full focus:outline-none focus:border-[#0B7A3E]"/>
+                  <div className="relative w-full">
+                    <input 
+                      type="date" 
+                      value={tourDate}
+                      onChange={(e) => setTourDate(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2.5 text-sm w-full focus:outline-none focus:border-[#0B7A3E] min-h-[44px] bg-white text-gray-700" 
+                    />
+                    {!tourDate && (
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none bg-white pr-4">
+                        mm/dd/yyyy
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
+                {/* KENDARAAN */}
                 <div className="flex flex-col">
                   <label className="text-[11px] font-bold text-gray-700 mb-1">Pilih Kendaraan</label>
-                  <select value={selectedCar} onChange={(e) => setSelectedCar(e.target.value)} className="border border-gray-300 rounded-md p-2.5 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E]">
-                    <option value="">-- Tanpa Kendaraan Tambahan --</option>
-                    <optgroup label="Seri Regular">{carsData.filter(car => car.category === 'regular').map(car => <option key={car.id} value={car.name}>{car.name}</option>)}</optgroup>
-                    <optgroup label="Seri Bisnis">{carsData.filter(car => car.category === 'bisnis').map(car => <option key={car.id} value={car.name}>{car.name}</option>)}</optgroup>
-                  </select>
+                  <div className="relative w-full">
+                    <select value={selectedCar} onChange={(e) => setSelectedCar(e.target.value)} className="ios-fix-select border border-gray-300 rounded-md p-2.5 pr-10 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E] min-h-[44px]">
+                      <option value="">-- Tanpa Kendaraan Tambahan --</option>
+                      <optgroup label="Seri Regular">{carsData.filter(car => car.category === 'regular').map(car => <option key={car.id} value={car.name}>{car.name}</option>)}</optgroup>
+                      <optgroup label="Seri Bisnis">{carsData.filter(car => car.category === 'bisnis').map(car => <option key={car.id} value={car.name}>{car.name}</option>)}</optgroup>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
                 </div>
 
+                {/* DRIVER */}
                 <div className="flex flex-col">
                   <label className="text-[11px] font-bold text-gray-700 mb-1">Pilih Driver</label>
-                  <select value={selectedDriver} onChange={(e) => setSelectedDriver(e.target.value)}
-                  className="border border-gray-300 rounded-md p-2.5 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E]">
-                  <option value="">-- Tanpa Driver Khusus --</option>
-                  {driverData.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
-                  </select>
+                  <div className="relative w-full">
+                    <select value={selectedDriver} onChange={(e) => setSelectedDriver(e.target.value)} className="ios-fix-select border border-gray-300 rounded-md p-2.5 pr-10 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E] min-h-[44px]">
+                      <option value="">-- Tanpa Driver Khusus --</option>
+                      {driverData.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
                 </div>
 
-                {/* RENDER DROPDOWN HARI SECARA OTOMATIS */}
+                {/* DROPDOWN DINAMIS ITINERARY */}
                 {currentTour.itinerary.map((item, index) => {
                   if (item.options) {
                     return (
                       <div key={index} className="flex flex-col">
                         <label className="text-[11px] font-bold text-gray-700 mb-1">Pilihan {item.day}</label>
-                        <select 
-                          value={daySelections[index] || ''} 
-                          onChange={(e) => handleDayChange(index, e.target.value)} 
-                          className="border border-gray-300 rounded-md p-2.5 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E]"
-                        >
-                          {Object.keys(item.options).map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
+                        <div className="relative w-full">
+                          <select 
+                            value={daySelections[index] || ''} 
+                            onChange={(e) => handleDayChange(index, e.target.value)} 
+                            className="ios-fix-select border border-gray-300 rounded-md p-2.5 pr-10 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E] min-h-[44px]"
+                          >
+                            {Object.keys(item.options).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                            <ChevronDown size={14} />
+                          </div>
+                        </div>
                       </div>
                     )
                   }
                   return null;
                 })}
 
+                {/* HOTEL */}
                 <div className="flex flex-col">
                   <label className="text-[11px] font-bold text-gray-700 mb-1">Penginapan</label>
-                  <select value={selectedHotel} onChange={(e) => setSelectedHotel(e.target.value)} className="border border-gray-300 rounded-md p-2.5 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E]">
-                    {Object.keys(currentTour.pricing).map(hotel => <option key={hotel} value={hotel}>{hotel}</option>)}
-                  </select>
+                  <div className="relative w-full">
+                    <select value={selectedHotel} onChange={(e) => setSelectedHotel(e.target.value)} className="ios-fix-select border border-gray-300 rounded-md p-2.5 pr-10 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E] min-h-[44px]">
+                      {Object.keys(currentTour.pricing).map(hotel => <option key={hotel} value={hotel}>{hotel}</option>)}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
                 </div>
 
+                {/* PAX */}
                 <div className="flex flex-col">
                   <label className="text-[11px] font-bold text-gray-700 mb-1">Jumlah Orang</label>
-                  <select value={selectedPax} onChange={(e) => setSelectedPax(e.target.value)} className="border border-gray-300 rounded-md p-2.5 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E]">
-                    {currentTour.paxOptions.map(pax => <option key={pax} value={pax}>{pax}</option>)}
-                  </select>
+                  <div className="relative w-full">
+                    <select value={selectedPax} onChange={(e) => setSelectedPax(e.target.value)} className="ios-fix-select border border-gray-300 rounded-md p-2.5 pr-10 text-sm w-full bg-white text-gray-900 font-medium focus:outline-none focus:border-[#0B7A3E] min-h-[44px]">
+                      {currentTour.paxOptions.map(pax => <option key={pax} value={pax}>{pax}</option>)}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <button onClick={() => { 
-                if(!tourDate) { alert('Mohon pilih tanggal tour terlebih dahulu!'); return; }
-                addToCart({
-                  name: currentTour.title, 
-                  img: currentTour.image, 
-                  price: totalPrice, 
-                  tanggal: tourDate,
-                  kendaraan: selectedCar || 'Tanpa Kendaraan Tambahan',
-                  driver: selectedDriver || 'Tim Harta Trans'
-                });
-              }}
-              className="w-full bg-[#F59E0B] text-white font-bold py-3.5 rounded-md mt-6 shadow-md hover:bg-amber-600 transition flex items-center justify-center gap-2 text-sm"> 
-              Masukkan ke Keranjang Tour
+              {/* TOMBOL EMAS KERANJANG */}
+              <button 
+                onClick={() => {
+                  if(!tourDate) { alert('Mohon pilih tanggal tour terlebih dahulu!'); return; }
+                  addToCart({
+                    name: currentTour.title,
+                    img: currentTour.image,
+                    price: totalPrice,
+                    tanggal: tourDate,
+                    kendaraan: selectedCar || 'Tanpa Kendaraan Tambahan',
+                    driver: selectedDriver || 'Tim Harta Trans'
+                  });
+                }}
+                className="w-full bg-[#F59E0B] text-white font-bold py-3.5 rounded-md mt-6 shadow-md hover:bg-amber-600 transition flex items-center justify-center gap-2 text-sm"
+              >
+                 <ShoppingCart size={18} /> Masukkan ke Keranjang Tour
               </button>
             </div>
           </div>
         </div>
 
-        {/* ... (Form Review dan Penampilan Review tetap sama persis seperti sebelumnya) ... */}
-        {/* BAGIAN REVIEW (Paste kembali kode review yang ada di file TourDetail milikmu sebelumnya di sini) */}
+        {/* REVIEW SECTIONS */}
         <div className="max-w-4xl mx-auto mt-20">
           <h3 className="font-bold text-2xl text-[#0B7A3E] mb-8 text-center uppercase tracking-wide">Ulasan Pelanggan</h3>
           {currentTourReviews.length > 0 ? (
