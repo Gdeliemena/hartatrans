@@ -57,14 +57,14 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
   return (
     <div className="bg-white min-h-screen pt-8 pb-24">
       
-      {/* INJEKSI CSS KHUSUS JINAKKAN SAFARI iPHONE */}
+      {/* INJEKSI CSS UNTUK MENYEMBUNYIKAN SEBELUM DI-TAP */}
       <style>{`
-        /* Memaksa teks tanggal Safari muncul & rata kiri */
-        input[type="date"]::-webkit-date-and-time-value {
-          min-height: 20px;
-          text-align: left;
+        /* Hilangkan panah kustom android bawaan untuk input date text */
+        input.mobile-date-input::-webkit-calendar-picker-indicator {
+          display: block;
+          cursor: pointer;
         }
-        /* Membuang panah bawaan Apple di iPhone secara paksa */
+        /* Buang panah ganda Apple di iPhone */
         select.ios-fix-select {
           -webkit-appearance: none !important;
           -moz-appearance: none !important;
@@ -118,25 +118,31 @@ export default function SewaDetail({ navigateTo, itemId, addToCart }) {
             {/* FORM INPUTS */}
             <div className="w-full space-y-5">
                
-               {/* FIX DETIK INI JUGA: Di HP wajib 1 kolom ke bawah (cols-1), di tablet baru cols-2 */}
+               {/* INPUT TANGGAL DENGEN TRIK TYPE SWITCHING (ANTI BLANK iPHONE & ANDROID) */}
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                  <div className="flex flex-col w-full">
                     <label className="text-[12px] font-bold text-gray-800 mb-2">Tanggal Mulai</label>
                     <input 
-                      type="date" 
+                      type={startDate ? "date" : "text"} 
+                      placeholder="Pilih Tanggal Mulai"
                       value={startDate} 
+                      onFocus={(e) => (e.target.type = "date")}
+                      onBlur={(e) => { if (!e.target.value) e.target.type = "text"; }}
                       onChange={(e) => setStartDate(e.target.value)} 
-                      className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
+                      className="mobile-date-input border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
                     />
                  </div>
                  <div className="flex flex-col w-full">
                     <label className="text-[12px] font-bold text-gray-800 mb-2">Tanggal Selesai</label>
                     <input 
-                      type="date" 
+                      type={endDate ? "date" : "text"} 
+                      placeholder="Pilih Tanggal Selesai"
                       value={endDate} 
-                      min={startDate} 
+                      min={startDate}
+                      onFocus={(e) => (e.target.type = "date")}
+                      onBlur={(e) => { if (!e.target.value) e.target.type = "text"; }}
                       onChange={(e) => setEndDate(e.target.value)} 
-                      className="border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
+                      className="mobile-date-input border border-gray-300 rounded-lg p-3 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#0B7A3E]/30 focus:border-[#0B7A3E] transition-all bg-white text-gray-700 min-h-[48px]" 
                     />
                  </div>
                </div>
